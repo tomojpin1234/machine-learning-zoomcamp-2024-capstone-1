@@ -8,7 +8,7 @@ Data Overview
 -------------
 
 This dataset contains about user posts (from 2022). Data somes from [Wykop.pl Social Media Data](https://www.kaggle.com/datasets/grelade/wykop-data-2022)
-Each row represents a unique property with attributes that describe its location, size, price, and other details. Below are descriptions of the key columns:
+Below are descriptions of the key columns:
 
 - title:	        Title of the post or content.
 - description	        Detailed description or summary of the post.
@@ -30,9 +30,9 @@ The primary goal of this project is to develop a predictive model that can estim
 
 ### Machine Learning Approach
 - Data Processing: The data is preprocessed to handle outliers, and standardize or encode features as needed.
-- Feature Engineering: Features like "price per square meter" and categorical encodings for location may be added to enhance the model's predictive power.
+- Feature Engineering: Features and categorical encodings for tags may be added to enhance the model's predictive power.
 - Model Training and Evaluation
-- Model Deployment: The trained model can be served through an API (e.g., using Flask) that takes in new property details and returns a predicted price, allowing for integration with applications or websites.
+- Model Deployment: The trained model can be served through an API (e.g., using Flask) that takes in new property details and returns a predicted upvote, allowing for integration with applications or websites.
 
 ### Expected Outcomes
 The project delivers:
@@ -183,7 +183,7 @@ Once the container starts, you’ll see a message to open your browser at `http:
         make stop_container  
 
 
-Using the WebApp to predict the house price
+Using the WebApp to predict the post engagement
 ---------------------------------
 ![alt text](images/webapp.png "webapp")       
 

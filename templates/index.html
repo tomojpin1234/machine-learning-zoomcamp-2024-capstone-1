@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Post Engagement Prediction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+    
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    
+        h1 {
+            text-align: center;
+            color: #333333;
+        }
+    
+        label {
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #555555;
+        }
+    
+        input[type="text"],
+        input[type="url"],
+        input[type="number"],
+        input[type="date"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    
+        input[type="datetime-local"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            font-size: 16px;
+            border: 1px solid #cccccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    
+        textarea {
+            resize: none;
+        }
+    
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+    
+        .spinner {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+    
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    
+        #result {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333333;
+            text-align: center;
+        }
+
+        #original_upvote {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #545454;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Predict Post Details</h1>
+
+        <!-- Form -->
+        <form id="predictionForm">
+            <label for="title">Title:</label>
+            <input type="text" id="title" name="title" required>
+
+            <label for="description">Description:</label>
+            <textarea id="description" name="description" rows="4" required></textarea>
+
+            <label for="url">URL:</label>
+            <input type="url" id="url" name="url" required>
+
+            <label for="tags">Tags (comma-separated):</label>
+            <input type="text" id="tags" name="tags" required>
+
+            <label for="creation_date">Creation Date:</label>
+            <input type="datetime-local" id="creation_date" name="creation_date" required>
+
+            <button type="button" onclick="getRandomPost()">Load random post data</button>
+            <button id="predictButton" type="button" onclick="predict()" disabled>Predict the Outcome</button>
+        </form>
+
+        <!-- Result and Spinner -->
+        <div id="spinner" class="spinner"></div>
+        <h2 id="original_upvote"></h2>
+        <h2 id="result"></h2>
+    </div>
+
+    <script>
+        // Store the random post data globally
+        // Store the random post data globally
+        let randomPostData = {};
+
+        async function getRandomPost() {
+            const apiUrl = getBaseUrl("random-post");
+            document.getElementById("spinner").style.display = "block";
+            document.getElementById("result").innerHTML = "";
+
+            try {
+                const response = await fetch(apiUrl);
+                const randomPost = await response.json();
+
+                // Parse tags if they are a string representation of a list
+                let tags = [];
+                if (randomPost.tags && typeof randomPost.tags === "string") {
+                    try {
+                        tags = JSON.parse(randomPost.tags.replace(/'/g, '"')); // Convert single quotes to double quotes for valid JSON
+                    } catch (error) {
+                        console.error("Error parsing tags:", error);
+                        tags = [];
+                    }
+                }
+
+                // Populate form fields with random post data
+                document.getElementById("title").value = randomPost.title || "";
+                document.getElementById("description").value = randomPost.description || "";
+                document.getElementById("url").value = randomPost.source_url || "";
+                document.getElementById("tags").value = tags.join(", ") || ""; // Join parsed tags with a comma
+                document.getElementById("creation_date").value = randomPost.creation_date || "";     
+                
+                // document.getElementById("original").value = randomPost.creation_date || "";     
+                // `Original Outcome: ${upvote_count}`;
+                
+                let upvote_count = randomPost.upvote_count || "";
+                console.log(upvote_count);
+                document.getElementById("original_upvote").innerHTML = `Original Outcome: ${upvote_count}`;
+
+                // Store the random post data globally for merging in predict
+                randomPostData = randomPost;
+
+                // Enable the Predict button
+                document.getElementById("predictButton").disabled = false;
+
+            } catch (error) {
+                console.error("Error fetching random post data:", error);
+                document.getElementById("result").innerHTML = "Error: Unable to load random post data.";
+
+                // Keep the Predict button disabled if there's an error
+                document.getElementById("predictButton").disabled = true;
+            } finally {
+                document.getElementById("spinner").style.display = "none";
+            }
+        }
+
+        async function predict() {
+            document.getElementById("spinner").style.display = "block";
+            document.getElementById("result").innerHTML = "";
+
+            try {
+                // Collect form data
+                const formData = {
+                    title: document.getElementById("title").value.trim(),
+                    description: document.getElementById("description").value.trim(),
+                    url: document.getElementById("url").value.trim(),
+                    tags: document.getElementById("tags").value.split(",").map(tag => tag.trim()),
+                    creation_date: document.getElementById("creation_date").value.trim(),
+                };
+
+                // Merge with random post data
+                const mergedData = { ...randomPostData, ...formData };
+
+                // Make prediction request
+                const apiUrl = getBaseUrl("predict");
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(mergedData),
+                });
+
+                const result = await response.json();
+
+                // Display prediction result
+                document.getElementById("spinner").style.display = "none";
+                document.getElementById("result").innerHTML = `Predicted Outcome: ${result.post_upvotes}`;
+            } catch (error) {
+                console.error("Error making prediction request:", error);
+                document.getElementById("spinner").style.display = "none";
+                document.getElementById("result").innerHTML = "Error: Unable to fetch prediction.";
+            }
+        }
+
+        function getBaseUrl(endpoint) {
+            const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+            return `${isLocal ? "http://localhost:8080" : "https://post-engagement-latest.onrender.com"}/${endpoint}`;
+        }        
+    </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+[tool.poetry]
+package-mode = false
+name = "PredictingPostEngagement"
+version = "0.1.0"
+description = ""
+authors = ["Tomojpin1234"]
+readme = "README.md"
+
+
+[tool.poetry.dependencies]
+python = "^3.11"
+scikit-learn = "^1.5.2"
+pandas = "^2.2.3"
+numpy = "^2.1.2"
+requests = "^2.32.3"
+textblob = "^0.18.0.post0"
+stopwordsiso = "^0.6.1"
+lightgbm = "^4.5.0"
+isort = "^5.13.2"
+
+[tool.poetry.group.deploy.dependencies]
+Flask = "^3.0.3"
+gunicorn = "^23.0.0"
+flask-cors = "^5.0.0"
+
+[tool.poetry.group.test.dependencies]
+jupyter = "^1.1.1"
+matplotlib = "^3.9.2"
+seaborn = "^0.13.2"
+category-encoders = "^2.6.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
